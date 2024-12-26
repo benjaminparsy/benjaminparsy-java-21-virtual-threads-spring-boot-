@@ -1,0 +1,74 @@
+name: Gatling Performance Tests
+
+on:
+  push:
+  workflow_dispatch:
+    inputs:
+      GATLING_TOTAL_USER:
+        description: 'Number of total users'
+        required: true
+        default: '100'
+      GATLING_DURATION_MINUTES:
+        description: 'Duration in minutes'
+        required: true
+        default: '1'
+      GATLING_USERS_ADDED_PER_SECOND:
+        description: 'Users added per second'
+        required: true
+        default: '10'
+      ACTIVATE_VIRTUAL_THREADS:
+        description: 'Active the virtual threads of Java 21'
+        required: true
+        default: 'true'
+
+env:
+  GATLING_TOTAL_USER: ${{ inputs.GATLING_TOTAL_USER || '100' }}
+  GATLING_DURATION_MINUTES: ${{ inputs.GATLING_DURATION_MINUTES || '1' }}
+  GATLING_USERS_ADDED_PER_SECOND: ${{ inputs.GATLING_USERS_ADDED_PER_SECOND || '10' }}
+  ACTIVATE_VIRTUAL_THREADS: ${{ inputs.ACTIVATE_VIRTUAL_THREADS || 'true' }}
+
+jobs:
+  gatling-performance-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Build with Maven
+        run: mvn clean install
+
+      - name: Start Spring Boot Application
+        run: mvn spring-boot:run &
+
+      - name: Wait for Spring Boot to be ready
+        run: |
+          timeout=60
+          url="http://localhost:8080/actuator/health"
+          echo "Waiting for application to be ready at $url..."
+          until curl -s $url | grep 'UP'; do
+            ((timeout--))
+            if [ $timeout -le 0 ]; then
+              echo "Application did not start in time."
+              exit 1
+            fi
+            sleep 1
+          done
+
+      - name: Run Gatling Tests
+        env:
+          GATLING_TOTAL_USER: ${{ env.GATLING_TOTAL_USER }}
+          GATLING_DURATION_MINUTES: ${{ env.GATLING_DURATION_MINUTES }}
+          GATLING_USERS_ADDED_PER_SECOND: ${{ env.GATLING_USERS_ADDED_PER_SECOND }}
+        run: mvn gatling:test -Dgatling.simulationClass=com.benjamin.parsy.vtsb.author.AuthorSimulation
+
+      - name: Upload Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: gatling-results
+          path: target/gatling

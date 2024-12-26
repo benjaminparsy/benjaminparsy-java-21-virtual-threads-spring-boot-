@@ -20,8 +20,10 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>21</java.version>
         <gatling.version>3.7.2</gatling.version>
-        <gatling.maven.plugin>4.2.9</gatling.maven.plugin>
         <mapstruct.version>1.5.5.Final</mapstruct.version>
+        <javafaker.version>0.15</javafaker.version>
+
+        <gatling.maven.plugin>4.2.9</gatling.maven.plugin>
     </properties>
 
     <dependencies>
@@ -31,12 +33,20 @@
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-webflux</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
 
         <!-- Spring test dependencies -->
@@ -71,6 +81,11 @@
             <groupId>org.mapstruct</groupId>
             <artifactId>mapstruct</artifactId>
             <version>${mapstruct.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.javafaker</groupId>
+            <artifactId>javafaker</artifactId>
+            <version>${javafaker.version}</version>
         </dependency>
     </dependencies>
 
@@ -125,9 +140,10 @@
                 <artifactId>gatling-maven-plugin</artifactId>
                 <version>${gatling.maven.plugin}</version>
                 <configuration>
-                    <simulationClass>org.baeldung.EmployeeRegistrationSimulation</simulationClass>
+                    <simulationClass>com.benjamin.parsy.vtsb.author.AuthorSimulation</simulationClass>
                 </configuration>
             </plugin>
+
         </plugins>
     </build>
 
