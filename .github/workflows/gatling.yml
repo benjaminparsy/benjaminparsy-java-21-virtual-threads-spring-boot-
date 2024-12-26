@@ -7,19 +7,23 @@ on:
       GATLING_TOTAL_USER:
         description: 'Number of total users'
         required: true
-        default: '100'
+        default: 100
+        type: number
       GATLING_DURATION_MINUTES:
         description: 'Duration in minutes'
         required: true
-        default: '1'
+        default: 1
+        type: number
       GATLING_USERS_ADDED_PER_SECOND:
         description: 'Users added per second'
         required: true
-        default: '10'
+        default: 10
+        type: number
       ACTIVATE_VIRTUAL_THREADS:
         description: 'Active the virtual threads of Java 21'
         required: true
-        default: 'true'
+        default: true
+        type: boolean
 
 env:
   GATLING_TOTAL_USER: ${{ inputs.GATLING_TOTAL_USER || '100' }}

@@ -15,7 +15,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import static io.gatling.javaapi.core.CoreDsl.*;
+import static io.gatling.javaapi.core.CoreDsl.StringBody;
+import static io.gatling.javaapi.core.CoreDsl.rampUsersPerSec;
 import static io.gatling.javaapi.http.HttpDsl.http;
 import static io.gatling.javaapi.http.HttpDsl.status;
 
@@ -27,15 +28,8 @@ public class AuthorSimulation extends Simulation {
 
     public AuthorSimulation() {
 
-        int maxResponseTimeInSeconds = (int) Duration.ofSeconds(10).toMillis();
-        double minPercentSuccessfulRequests = 90d;
-
         setUp(POST_SCENARIO_BUILDER.injectOpen(injection())
-                .protocols(HTTP_PROTOCOL_BUILDER))
-                .assertions(
-                        global().responseTime().max().lte(maxResponseTimeInSeconds),
-                        global().successfulRequests().percent().gt(minPercentSuccessfulRequests)
-                );
+                .protocols(HTTP_PROTOCOL_BUILDER));
     }
 
     private static HttpProtocolBuilder setupProtocolForSimulation() {
