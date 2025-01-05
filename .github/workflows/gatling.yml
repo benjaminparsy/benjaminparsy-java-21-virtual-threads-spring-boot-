@@ -4,20 +4,15 @@ on:
   push:
   workflow_dispatch:
     inputs:
-      GATLING_TOTAL_USER:
-        description: 'Number of total users'
+      GATLING_REQUESTS_PER_SECOND:
+        description: 'Number of requests per second'
         required: true
-        default: 100
+        default: 60
         type: number
-      GATLING_DURATION_MINUTES:
-        description: 'Duration in minutes'
+      GATLING_DURATION_SECONDS:
+        description: 'Duration in seconds'
         required: true
-        default: 1
-        type: number
-      GATLING_USERS_ADDED_PER_SECOND:
-        description: 'Users added per second'
-        required: true
-        default: 10
+        default: 200
         type: number
       ACTIVATE_VIRTUAL_THREADS:
         description: 'Active the virtual threads of Java 21'
@@ -26,9 +21,8 @@ on:
         type: boolean
 
 env:
-  GATLING_TOTAL_USER: ${{ inputs.GATLING_TOTAL_USER || '100' }}
-  GATLING_DURATION_MINUTES: ${{ inputs.GATLING_DURATION_MINUTES || '1' }}
-  GATLING_USERS_ADDED_PER_SECOND: ${{ inputs.GATLING_USERS_ADDED_PER_SECOND || '10' }}
+  GATLING_REQUESTS_PER_SECOND: ${{ inputs.GATLING_REQUESTS_PER_SECOND || '400' }}
+  GATLING_DURATION_SECONDS: ${{ inputs.GATLING_DURATION_SECONDS || '60' }}
   ACTIVATE_VIRTUAL_THREADS: ${{ inputs.ACTIVATE_VIRTUAL_THREADS || 'true' }}
 
 jobs:
@@ -48,14 +42,14 @@ jobs:
         run: mvn clean install
 
       - name: Start Spring Boot Application
-        run: mvn spring-boot:run &
+        run: mvn spring-boot:run -Dspring-boot.run.arguments="--spring.threads.virtual.enabled=${{ env.ACTIVATE_VIRTUAL_THREADS }}" &
 
       - name: Wait for Spring Boot to be ready
         run: |
           timeout=60
           url="http://localhost:8080/actuator/health"
           echo "Waiting for application to be ready at $url..."
-          until curl -s $url | grep 'UP'; do
+          until curl -s $url --header "userId: github" | grep 'UP'; do
             ((timeout--))
             if [ $timeout -le 0 ]; then
               echo "Application did not start in time."
@@ -66,9 +60,8 @@ jobs:
 
       - name: Run Gatling Tests
         env:
-          GATLING_TOTAL_USER: ${{ env.GATLING_TOTAL_USER }}
-          GATLING_DURATION_MINUTES: ${{ env.GATLING_DURATION_MINUTES }}
-          GATLING_USERS_ADDED_PER_SECOND: ${{ env.GATLING_USERS_ADDED_PER_SECOND }}
+          GATLING_REQUESTS_PER_SECOND: ${{ env.GATLING_REQUESTS_PER_SECOND }}
+          GATLING_DURATION_SECONDS: ${{ env.GATLING_DURATION_SECONDS }}
         run: mvn gatling:test -Dgatling.simulationClass=com.benjamin.parsy.vtsb.author.AuthorSimulation
 
       - name: Upload Results

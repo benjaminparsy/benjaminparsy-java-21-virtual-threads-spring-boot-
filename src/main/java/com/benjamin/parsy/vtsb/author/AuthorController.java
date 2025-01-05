@@ -28,11 +28,7 @@ public class AuthorController {
     @GetMapping
     public ResponseEntity<List<AuthorResponseDto>> getAuthors() throws InterruptedException {
 
-        log.info("Call to GET /authors");
-        log.info("Current thread : {}", Thread.currentThread());
-
         List<Author> authorList = new LinkedList<>(authorService.findAll());
-
         Thread.sleep(1000);
 
         return ResponseEntity.ok(authorMapper.toDtoList(authorList));
@@ -41,11 +37,7 @@ public class AuthorController {
     @PostMapping
     public ResponseEntity<AuthorResponseDto> postAuthors(@RequestBody @NotNull @Valid AuthorRequestDto authorRequestDto) throws InterruptedException {
 
-        log.info("Call to POST /authors");
-        log.info("Current thread : {}", Thread.currentThread());
-
         Author author = authorService.save(authorMapper.toEntity(authorRequestDto));
-
         Thread.sleep(1000);
 
         return ResponseEntity.status(HttpStatus.CREATED)

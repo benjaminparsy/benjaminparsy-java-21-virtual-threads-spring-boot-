@@ -1,5 +1,6 @@
 package com.benjamin.parsy.vtsb.author;
 
+import com.benjamin.parsy.vtsb.shared.web.HttpHeaderName;
 import com.github.javafaker.Faker;
 import io.gatling.javaapi.core.CoreDsl;
 import io.gatling.javaapi.core.OpenInjectionStep;
@@ -16,7 +17,6 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 import static io.gatling.javaapi.core.CoreDsl.StringBody;
-import static io.gatling.javaapi.core.CoreDsl.rampUsersPerSec;
 import static io.gatling.javaapi.http.HttpDsl.http;
 import static io.gatling.javaapi.http.HttpDsl.status;
 
@@ -28,15 +28,14 @@ public class AuthorSimulation extends Simulation {
 
     public AuthorSimulation() {
 
-        setUp(POST_SCENARIO_BUILDER.injectOpen(injection())
+        setUp(POST_SCENARIO_BUILDER
+                .injectOpen(userInjection())
                 .protocols(HTTP_PROTOCOL_BUILDER));
     }
 
     private static HttpProtocolBuilder setupProtocolForSimulation() {
 
-        final String host = System.getenv().getOrDefault("BASE_URL", "http://localhost:8080");
-
-        return HttpDsl.http.baseUrl(host)
+        return HttpDsl.http.baseUrl("http://localhost:8080")
                 .acceptHeader(MediaType.APPLICATION_JSON_VALUE)
                 .maxConnectionsPerHost(10)
                 .userAgentHeader("Gatling/Performance Test");
@@ -62,42 +61,38 @@ public class AuthorSimulation extends Simulation {
     private static ScenarioBuilder buildPostScenario() {
 
         String bodyJson = """
-            {
-                "firstname": "${firstname}",
-                "lastname": "${lastname}"
-            }
-            """;
+                {
+                    "firstname": "${firstname}",
+                    "lastname": "${lastname}"
+                }
+                """;
 
-        return CoreDsl.scenario("Load Test Creating Authors")
+        return CoreDsl.scenario("Create and get authors")
                 .feed(FEED_DATA)
-                .exec(http("create-authors").post("/authors")
+                .exec(http("create-authors")
+                        .post("/authors")
                         .header("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+                        .header(HttpHeaderName.USER_ID.getName(), session -> String.valueOf(session.userId()))
                         .body(StringBody(bodyJson))
-                        .check(status().is(201)))
-                .exec(http("get-authors").get("/authors")
-                        .check(status().is(200)));
+                        .check(status().is(201))
+                );
     }
 
-    private OpenInjectionStep.RampRate.RampRateOpenInjectionStep injection() {
+    private OpenInjectionStep userInjection() {
 
-        String usersAddedPerSecondProperty = System.getenv().get("GATLING_USERS_ADDED_PER_SECOND");
-        String totalDesiredUserCountProperty = System.getenv().get("GATLING_TOTAL_USER");
-        String steadyStateDurationMinutesProperty = System.getenv().get("GATLING_DURATION_MINUTES");
+        String requestsPerSecondProperty = System.getenv().get("GATLING_REQUESTS_PER_SECOND");
+        String durationInSecondesProperty = System.getenv().get("GATLING_DURATION_SECONDS");
 
         System.out.println("==============================================================");
-        System.out.println("Users added per second : " + usersAddedPerSecondProperty);
-        System.out.println("Total desired user count : " + totalDesiredUserCountProperty);
-        System.out.println("Steady state duration minutes : " + steadyStateDurationMinutesProperty);
+        System.out.println("Requests per second : " + requestsPerSecondProperty);
+        System.out.println("Duration in seconds : " + durationInSecondesProperty);
         System.out.println("==============================================================");
 
-        int usersAddedPerSecond = Integer.parseInt(usersAddedPerSecondProperty);
-        int totalDesiredUserCount = Integer.parseInt(totalDesiredUserCountProperty);
-        Duration totalRampUptimeSeconds = Duration.ofSeconds(totalDesiredUserCount / usersAddedPerSecond);
-        int steadyStateDurationMinutes = Integer.parseInt(steadyStateDurationMinutesProperty);
+        int requestsPerSecond = Integer.parseInt(requestsPerSecondProperty);
+        Duration durationInSecondes = Duration.ofSeconds(Long.parseLong(durationInSecondesProperty));
 
-        return rampUsersPerSec(usersAddedPerSecond)
-                .to(totalDesiredUserCount)
-                .during(totalRampUptimeSeconds.plusMinutes(steadyStateDurationMinutes));
+        return CoreDsl.constantUsersPerSec(requestsPerSecond) // Number of request per second
+                .during(durationInSecondes); // Time of the test
     }
 
 }

@@ -1,6 +1,7 @@
 package com.benjamin.parsy.vtsb.author;
 
 import com.benjamin.parsy.vtsb.author.dto.AuthorRequestDto;
+import com.benjamin.parsy.vtsb.shared.web.HttpHeaderName;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,7 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.nio.charset.StandardCharsets;
+import java.util.UUID;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -23,7 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @TestPropertySource(properties =
-    "activate.virtual.threads=true"
+    "spring.threads.virtual.enabled=true"
 )
 class AuthorControllerTest {
 
@@ -34,19 +36,21 @@ class AuthorControllerTest {
 
     @Sql(scripts = "classpath:data-test.sql")
     @Test
-    void getBooks_BooksPresent_ReturnAllBooks(@Value(BASE_PATH_JSON_EXPECTED + "/getAuthors.json") Resource expectedJson) throws Exception {
+    void getAuthors_AuthorsPresent_ReturnAllAuthors(@Value(BASE_PATH_JSON_EXPECTED + "/getAuthors.json") Resource expectedJson) throws Exception {
 
         // When and then
-        mockMvc.perform(get("/authors"))
+        mockMvc.perform(get("/authors")
+                        .header(HttpHeaderName.USER_ID.getName(), UUID.randomUUID().toString()))
                 .andDo(print())
                 .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(content().encoding(StandardCharsets.UTF_8))
                 .andExpect(content().json(expectedJson.getContentAsString(StandardCharsets.UTF_8)));
 
     }
 
-    @Sql(scripts = "classpath:data-test.sql")
     @Test
-    void postBooks_BookOk_SaveAndReturnBook(@Value(BASE_PATH_JSON_EXPECTED + "/postAuthors.json") Resource expectedJson) throws Exception {
+    void postAuthors_AuthorOk_SaveAndReturnAuthor() throws Exception {
 
         // Given
         String firstname = "Emile";
@@ -63,7 +67,8 @@ class AuthorControllerTest {
         // When and then
         mockMvc.perform(post("/authors")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(json))
+                        .content(json)
+                        .header(HttpHeaderName.USER_ID.getName(), UUID.randomUUID().toString()))
                 .andDo(print())
                 .andExpect(status().isCreated())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
