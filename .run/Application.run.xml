@@ -1,0 +1,16 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Application" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
+    <additionalParameters>
+      <param>
+        <option name="enabled" value="true" />
+        <option name="name" value="spring.threads.virtual.enabled" />
+        <option name="value" value="true" />
+      </param>
+    </additionalParameters>
+    <module name="java-21-virtual-threads-spring-boot" />
+    <option name="SPRING_BOOT_MAIN_CLASS" value="com.benjamin.parsy.vtsb.Application" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
