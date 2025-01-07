@@ -29,6 +29,8 @@ public class AuthorController {
     public ResponseEntity<List<AuthorResponseDto>> getAuthors() throws InterruptedException {
 
         List<Author> authorList = new LinkedList<>(authorService.findAll());
+
+        // Simulation of a long response
         Thread.sleep(1000);
 
         return ResponseEntity.ok(authorMapper.toDtoList(authorList));
@@ -38,6 +40,8 @@ public class AuthorController {
     public ResponseEntity<AuthorResponseDto> postAuthors(@RequestBody @NotNull @Valid AuthorRequestDto authorRequestDto) throws InterruptedException {
 
         Author author = authorService.save(authorMapper.toEntity(authorRequestDto));
+
+        // Simulation of a long response
         Thread.sleep(1000);
 
         return ResponseEntity.status(HttpStatus.CREATED)

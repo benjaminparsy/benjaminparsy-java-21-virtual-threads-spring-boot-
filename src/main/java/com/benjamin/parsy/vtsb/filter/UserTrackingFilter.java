@@ -12,6 +12,9 @@ import org.springframework.web.bind.MissingRequestValueException;
 
 import java.io.IOException;
 
+/**
+ * This filter records and logs calls made to the various endpoints
+ */
 @Component
 @Order(1)
 @Slf4j

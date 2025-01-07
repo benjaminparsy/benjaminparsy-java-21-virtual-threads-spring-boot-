@@ -10,6 +10,11 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * This bean enables asynchronous data to be collected securely.
+ * The use of {@link ConcurrentHashMap} and {@link AtomicInteger} makes the bean thread-safe,
+ * allowing data to be collected without concurrency problems.
+ */
 @Getter
 @Component
 public class ThreadSafeDataCollector {

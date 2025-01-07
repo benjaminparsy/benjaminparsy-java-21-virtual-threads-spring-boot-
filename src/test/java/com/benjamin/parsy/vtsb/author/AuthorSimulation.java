@@ -20,6 +20,9 @@ import static io.gatling.javaapi.core.CoreDsl.StringBody;
 import static io.gatling.javaapi.http.HttpDsl.http;
 import static io.gatling.javaapi.http.HttpDsl.status;
 
+/**
+ * This class is used to configure the gatling performance test
+ */
 public class AuthorSimulation extends Simulation {
 
     private static final HttpProtocolBuilder HTTP_PROTOCOL_BUILDER = setupProtocolForSimulation();
@@ -33,6 +36,9 @@ public class AuthorSimulation extends Simulation {
                 .protocols(HTTP_PROTOCOL_BUILDER));
     }
 
+    /**
+     * Http parameter configuration
+     */
     private static HttpProtocolBuilder setupProtocolForSimulation() {
 
         return HttpDsl.http.baseUrl("http://localhost:8080")
@@ -41,6 +47,9 @@ public class AuthorSimulation extends Simulation {
                 .userAgentHeader("Gatling/Performance Test");
     }
 
+    /**
+     * Feeds queries programmed in the scenario
+     */
     private static Iterator<Map<String, Object>> setupTestFeedData() {
 
         Faker faker = new Faker();
@@ -58,8 +67,12 @@ public class AuthorSimulation extends Simulation {
         return iterator;
     }
 
+    /**
+     * Test scenario to be performed
+     */
     private static ScenarioBuilder buildPostScenario() {
 
+        // Body json preparation
         String bodyJson = """
                 {
                     "firstname": "${firstname}",
@@ -78,6 +91,9 @@ public class AuthorSimulation extends Simulation {
                 );
     }
 
+    /**
+     * Manage number of users / request
+     */
     private OpenInjectionStep userInjection() {
 
         String requestsPerSecondProperty = System.getenv().get("GATLING_REQUESTS_PER_SECOND");
