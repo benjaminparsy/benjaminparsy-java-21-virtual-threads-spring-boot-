@@ -12,7 +12,7 @@
 
     <groupId>com.benjamin.parsy</groupId>
     <artifactId>java-21-virtual-threads-spring-boot</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.0</version>
     <name>java-21-virtual-threads-spring-boot</name>
     <description>Technology watch project on Java 21 virtual threads with Spring Boot</description>
 
